@@ -3,6 +3,7 @@ package com.example.stopwatch;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -14,7 +15,8 @@ public class MainActivity extends AppCompatActivity {
     private Button start, restart;
     private Chronometer timer;
     private int startClick;
-    private long base, current;
+    private long current, pause, base, difference;
+    private boolean boo;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,16 +32,32 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v){
                 if(startClick % 2 == 0)
                 {
-                    start.setText("pause");
-                    timer.start();
+                    current = SystemClock.elapsedRealtime();
+                    difference = current - pause;
+                    if(!boo){
+                        boo = true;
+                        difference = 0;
+                    }
+                    start.setText(getString(R.string.pause));
                     startClick++;
                     base = timer.getBase();
+                    timer.setBase(base + difference);
+                    timer.start();
                 }
                 else{
-                    start.setText("start");
+                    pause = SystemClock.elapsedRealtime();
+                    start.setText(R.string.start);
                     timer.stop();
                     startClick++;
                 }
+            }
+        });
+        restart.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick(View v){
+                timer.setBase(SystemClock.elapsedRealtime());
+                pause = SystemClock.elapsedRealtime();
+                current = SystemClock.elapsedRealtime();
             }
         });
 
