@@ -2,5 +2,5 @@
     <string name="app_name">Stopwatch</string>
     <string name="restart">restart</string>
     <string name="start">start</string>
-    <string name="pause">start</string>
+    <string name="pause">pause</string>
 </resources>

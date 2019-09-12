@@ -1,5 +1,6 @@
 package com.example.stopwatch;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.widget.Chronometer;
 public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
+    public static final String KEY_CHRONOMETER_BASE = "chronometer base";
     private Button start, restart;
     private Chronometer timer;
     private int startClick;
@@ -24,7 +26,28 @@ public class MainActivity extends AppCompatActivity {
         wireWidgets();
         setListeners();
         Log.d(TAG, "onCreate: ");
-        startClick = 0;
+        if(savedInstanceState != null) {
+            timer.setBase(savedInstanceState.getLong(KEY_CHRONOMETER_BASE));
+            if(startClick % 2 == 0){//if is paused
+                pause = SystemClock.elapsedRealtime();
+                start.setText(R.string.start);
+                timer.stop();
+                startClick++;
+            }
+            else{
+                current = SystemClock.elapsedRealtime();
+                difference = current - pause;
+                if(!boo){
+                    boo = true;
+                    difference = 0;
+                }
+                start.setText(getString(R.string.pause));
+                startClick++;
+                base = timer.getBase();
+                timer.setBase(base + difference);
+                timer.start();
+            }
+        }
     }
 
     private void setListeners() {
@@ -58,8 +81,14 @@ public class MainActivity extends AppCompatActivity {
                 timer.setBase(SystemClock.elapsedRealtime());
                 pause = SystemClock.elapsedRealtime();
                 current = SystemClock.elapsedRealtime();
+                timer.stop();
+                start.setText(getString(R.string.start));
+                if(startClick % 2 != 0) {
+                    startClick++;
+                }
             }
         });
+
 
     }
 
@@ -98,4 +127,10 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         Log.d(TAG, "onPause: ");
     }
+    protected void onSaveInstanceState(@NonNull Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        outState.putLong(KEY_CHRONOMETER_BASE, timer.getBase());
+    }
+
 }
