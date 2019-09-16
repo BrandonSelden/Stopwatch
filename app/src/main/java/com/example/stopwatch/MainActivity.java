@@ -14,38 +14,40 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String KEY_CHRONOMETER_BASE = "chronometer base";
+    public static final String KEY_ISRUNNING = "If It's Running";
     private Button start, restart;
     private Chronometer timer;
-    private int startClick;
     private long current, pause, base, difference;
-    private boolean boo;
+    private boolean boo, isRunning;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         wireWidgets();
         setListeners();
+        isRunning = true;
         Log.d(TAG, "onCreate: ");
         if(savedInstanceState != null) {
             timer.setBase(savedInstanceState.getLong(KEY_CHRONOMETER_BASE));
-            if(startClick % 2 == 0){//if is paused
-                pause = SystemClock.elapsedRealtime();
+            isRunning = !savedInstanceState.getBoolean(KEY_ISRUNNING);
+            if(!isRunning){//if is running
+                difference = current - pause;
+                timer.setBase(difference);
                 start.setText(R.string.start);
                 timer.stop();
-                startClick++;
+                isRunning = true;
             }
             else{
                 current = SystemClock.elapsedRealtime();
-                difference = current - pause;
                 if(!boo){
                     boo = true;
                     difference = 0;
                 }
                 start.setText(getString(R.string.pause));
-                startClick++;
                 base = timer.getBase();
                 timer.setBase(base + difference);
                 timer.start();
+                isRunning = false;
             }
         }
     }
@@ -53,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private void setListeners() {
         start.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
-                if(startClick % 2 == 0)
+                if(isRunning)
                 {
                     current = SystemClock.elapsedRealtime();
                     difference = current - pause;
@@ -62,16 +64,16 @@ public class MainActivity extends AppCompatActivity {
                         difference = 0;
                     }
                     start.setText(getString(R.string.pause));
-                    startClick++;
                     base = timer.getBase();
                     timer.setBase(base + difference);
                     timer.start();
+                    isRunning = false;
                 }
                 else{
                     pause = SystemClock.elapsedRealtime();
                     start.setText(R.string.start);
                     timer.stop();
-                    startClick++;
+                    isRunning = true;
                 }
             }
         });
@@ -81,11 +83,7 @@ public class MainActivity extends AppCompatActivity {
                 timer.setBase(SystemClock.elapsedRealtime());
                 pause = SystemClock.elapsedRealtime();
                 current = SystemClock.elapsedRealtime();
-                timer.stop();
-                start.setText(getString(R.string.start));
-                if(startClick % 2 != 0) {
-                    startClick++;
-                }
+                isRunning = true;
             }
         });
 
@@ -131,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onSaveInstanceState(outState);
         outState.putLong(KEY_CHRONOMETER_BASE, timer.getBase());
+        outState.putBoolean(KEY_ISRUNNING, isRunning);
     }
 
 }
